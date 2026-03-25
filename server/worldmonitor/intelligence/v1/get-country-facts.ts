@@ -120,6 +120,8 @@ interface WikiResult {
 }
 
 async function fetchWikidata(code: string): Promise<WikiResult | null> {
+  // Strict allowlist: exactly 2 uppercase ASCII letters. Prevents SPARQL injection
+  // since the value is interpolated into the query string below.
   if (!/^[A-Z]{2}$/.test(code)) return null;
   try {
     return await cachedFetchJson<WikiResult>(
@@ -127,6 +129,8 @@ async function fetchWikidata(code: string): Promise<WikiResult | null> {
       FACTS_TTL,
       async () => {
         try {
+          // SECURITY: `code` is guaranteed to be exactly 2 uppercase ASCII letters
+          // by the regex guard above, making string interpolation safe here.
           const sparql = `SELECT ?headLabel ?officeLabel WHERE { ?country wdt:P297 "${code}". ?country p:P35 ?stmt. ?stmt ps:P35 ?head. FILTER NOT EXISTS { ?stmt pq:P582 ?end } OPTIONAL { ?stmt pq:P39 ?office } SERVICE wikibase:label { bd:serviceParam wikibase:language "en" } } LIMIT 1`;
           const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(sparql)}`;
           const resp = await fetch(url, {

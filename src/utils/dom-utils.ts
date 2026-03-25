@@ -54,6 +54,12 @@ export function replaceChildren(el: Element, ...children: DomChild[]): void {
   el.appendChild(frag);
 }
 
+/**
+ * Parse an HTML string into a DocumentFragment.
+ *
+ * **Security warning**: this sets `innerHTML` directly — only pass trusted or
+ * pre-sanitized HTML. For untrusted content use {@link safeHtml} instead.
+ */
 export function rawHtml(html: string): DocumentFragment {
   const tpl = document.createElement('template');
   tpl.innerHTML = html;
